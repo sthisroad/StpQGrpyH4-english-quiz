@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>英語クイズ</title>
+<style>
+  :root{
+    --bg:#F2F2FB;
+    --card:#FFFFFF;
+    --ink:#2B2B3A;
+    --muted:#7B7B92;
+    --line:#E7E6F2;
+    --primary:#5B6CF0;
+    --sun:#FFC53D;
+    --radius:18px;
+    --shadow:0 6px 20px rgba(60,60,120,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;
+    line-height:1.7;
+    padding:0 0 40px;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:0 16px;}
+
+  header{padding:26px 0 14px;}
+  .eyebrow{
+    font-size:12px;font-weight:800;color:var(--primary);
+    letter-spacing:.14em;text-transform:uppercase;margin:0 0 4px;
+  }
+  h1{font-size:26px;font-weight:800;margin:0 0 6px;letter-spacing:.01em;}
+  .lead{font-size:13.5px;color:var(--muted);margin:0;}
+
+  .count-line{font-size:12.5px;color:var(--muted);font-weight:700;margin:18px 0 8px;}
+
+  /* Quiz cards */
+  .grid{display:flex;flex-direction:column;gap:14px;}
+  a.qcard{
+    display:block;text-decoration:none;color:inherit;
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 18px 16px;
+    border-left:5px solid var(--accent,var(--primary));
+    transition:transform .12s, box-shadow .12s;
+  }
+  a.qcard:active{transform:scale(.99);}
+  a.qcard:hover{box-shadow:0 10px 28px rgba(60,60,120,.14);}
+  .qhead{display:flex;align-items:center;gap:12px;}
+  .qicon{
+    flex:none;width:44px;height:44px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    background:var(--accent-soft,#EEF0FF);
+  }
+  .qtitle{font-size:18px;font-weight:800;line-height:1.3;}
+  .qsub{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+  .qdesc{font-size:13.5px;color:#55556a;margin:11px 0 12px;}
+  .qmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .chip{font-size:11.5px;font-weight:700;color:var(--muted);background:#F3F3F9;padding:3px 10px;border-radius:999px;}
+  .chip.q{background:var(--accent-soft,#EEF0FF);color:var(--accent,var(--primary));}
+  .arrow{margin-left:auto;color:var(--accent,var(--primary));font-weight:800;font-size:18px;}
+
+  .soon{opacity:.55;border-left-color:#C9C9DD;}
+  .soon .arrow{color:var(--muted);}
+  .soon .qicon{background:#F0F0F6;}
+
+  footer{margin-top:26px;font-size:12px;color:var(--muted);text-align:center;}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <p class="eyebrow">English Quiz</p>
+  <h1>英語クイズ</h1>
+  <p class="lead">やりたいクイズをえらんでね。10問といて答え合わせ、くりかえし練習できるよ ✏️</p>
+</header>
+
+<main class="wrap">
+  <p class="count-line" id="countLine"></p>
+  <div class="grid" id="grid"></div>
+  <footer>くりかえし練習して、少しずつ得意にしていこう 🌱</footer>
+</main>
+
+<script>
+/* =========================================================
+   クイズ一覧の設定
+   ---------------------------------------------------------
+   ★ 新しいクイズを追加するときは：
+     1) クイズのHTMLファイル（例 verbs.html）を同じフォルダに置く
+     2) 下の QUIZZES に1つ追加する
+        - file : ファイル名（同じフォルダに置いたもの）
+        - title: 日本語タイトル
+        - sub  : 英語の小見出し
+        - desc : かんたんな説明
+        - count: 問題数（"約120問" など自由な文字列でOK）
+        - tags : 分野タグ（配列）
+        - icon : 絵文字（お好みで）
+        - color: アクセント色 [濃い色, うすい背景色]
+        - ready: true=公開 / false=「準備中」表示（リンクは無効）
+   ========================================================= */
+const QUIZZES = [
+  {
+    file:"prepositions-articles.html",
+    title:"前置詞と冠詞",
+    sub:"Prepositions & Articles",
+    desc:"in / on / at や a / an / the の使い分けを練習。解説つきで、まちがえても身につくよ。",
+    count:"約170問からランダム出題",
+    tags:["前置詞","冠詞 a/an/the"],
+    icon:"🧩",
+    color:["#5B6CF0","#EEF0FF"],
+    ready:true
+  }
+  // ↓ 例：今後こんなふうに追加していけます（ready:false は準備中表示）
+  // ,{
+  //   file:"be-verb.html",
+  //   title:"be動詞と一般動詞",
+  //   sub:"Be-verbs & Verbs",
+  //   desc:"am / is / are と do / does の使い分けを練習。",
+  //   count:"準備中",
+  //   tags:["be動詞","一般動詞"],
+  //   icon:"⚡",
+  //   color:["#16A06E","#E6F7F0"],
+  //   ready:false
+  // }
+];
+
+const grid = document.getElementById('grid');
+const readyCount = QUIZZES.filter(q=>q.ready).length;
+document.getElementById('countLine').textContent =
+  'クイズ ' + readyCount + '種類' + (QUIZZES.length>readyCount ? '（＋準備中）' : '');
+
+QUIZZES.forEach(q=>{
+  const [accent, soft] = q.color || ["#5B6CF0","#EEF0FF"];
+  const style = 'style="--accent:'+accent+';--accent-soft:'+soft+'"';
+  const tags = (q.tags||[]).map(t=>'<span class="chip">'+t+'</span>').join('');
+  const inner =
+    '<div class="qhead">'+
+      '<div class="qicon">'+(q.icon||'📘')+'</div>'+
+      '<div><div class="qsub">'+(q.sub||'')+'</div><div class="qtitle">'+q.title+'</div></div>'+
+      '<div class="arrow">'+(q.ready?'›':'…')+'</div>'+
+    '</div>'+
+    '<p class="qdesc">'+q.desc+'</p>'+
+    '<div class="qmeta"><span class="chip q">'+q.count+'</span>'+tags+'</div>';
+
+  if(q.ready){
+    const a = document.createElement('a');
+    a.className='qcard';
+    a.href=q.file;
+    a.setAttribute('style', style.replace('style="','').replace('"',''));
+    a.innerHTML=inner;
+    grid.appendChild(a);
+  }else{
+    const div = document.createElement('div');
+    div.className='qcard soon';
+    div.setAttribute('style', style.replace('style="','').replace('"',''));
+    div.innerHTML=inner;
+    grid.appendChild(div);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>英語クイズ｜前置詞と冠詞</title>
+<style>
+  :root{
+    --bg:#F2F2FB;
+    --card:#FFFFFF;
+    --ink:#2B2B3A;
+    --muted:#7B7B92;
+    --line:#E7E6F2;
+    --primary:#5B6CF0;
+    --primary-dark:#4554d8;
+    --correct:#16A06E;
+    --correct-bg:#E6F7F0;
+    --wrong:#E5614C;
+    --wrong-bg:#FCEDEA;
+    --sun:#FFC53D;
+    --radius:18px;
+    --shadow:0 6px 20px rgba(60,60,120,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;
+    line-height:1.7;
+    padding:0 0 130px;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:0 16px;}
+
+  /* Header */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(242,242,251,.92);
+    backdrop-filter:blur(8px);
+    padding:16px 0 12px;
+    border-bottom:1px solid var(--line);
+  }
+  .title{
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+    font-size:21px;font-weight:800;letter-spacing:.01em;margin:0 0 2px;
+  }
+  .title .en{
+    font-size:13px;font-weight:700;color:var(--primary);
+    letter-spacing:.08em;text-transform:uppercase;
+  }
+  .sub{font-size:12.5px;color:var(--muted);margin:0;}
+  .back{display:inline-block;font-size:13px;font-weight:700;color:var(--primary);text-decoration:none;margin-bottom:8px;}
+  .back:active{opacity:.6;}
+
+  /* Category pills */
+  .pills{display:flex;gap:8px;margin-top:12px;}
+  .pill{
+    flex:1;border:1.5px solid var(--line);background:var(--card);
+    color:var(--muted);font-weight:700;font-size:14px;
+    padding:9px 4px;border-radius:999px;cursor:pointer;
+    transition:.15s;
+  }
+  .pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:var(--shadow);}
+
+  /* Result banner */
+  .banner{
+    margin:18px 0 4px;padding:18px 20px;border-radius:var(--radius);
+    background:linear-gradient(135deg,#5B6CF0,#7A6CF0);
+    color:#fff;box-shadow:var(--shadow);
+    display:none;
+  }
+  .banner.show{display:block;animation:pop .35s ease;}
+  .banner .score{font-size:34px;font-weight:800;line-height:1.1;}
+  .banner .score small{font-size:17px;font-weight:700;opacity:.85;}
+  .banner .msg{font-size:14.5px;margin-top:4px;opacity:.95;}
+  .stars{font-size:18px;letter-spacing:3px;margin-top:6px;}
+  @keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+  /* Question card */
+  .card{
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 18px 16px;margin-top:14px;
+  }
+  .q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .num{
+    flex:none;width:30px;height:30px;border-radius:50%;
+    background:#EEF0FF;color:var(--primary);font-weight:800;font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tag{font-size:11px;font-weight:700;color:var(--muted);
+    background:#F3F3F9;padding:3px 9px;border-radius:999px;}
+  .sentence{font-size:18px;font-weight:600;margin:2px 0 14px;letter-spacing:.005em;}
+  .blank{
+    display:inline-block;min-width:46px;border-bottom:2.5px dashed #C9C9DD;
+    text-align:center;color:var(--primary);font-weight:800;margin:0 2px;
+  }
+  .blank.filled{border-bottom-style:solid;}
+
+  /* Choices */
+  .choices{display:flex;flex-wrap:wrap;gap:9px;}
+  .choice{
+    flex:1 1 0;min-width:64px;text-align:center;
+    border:1.5px solid var(--line);background:#fff;
+    color:var(--ink);font-size:17px;font-weight:700;
+    padding:12px 6px;border-radius:13px;cursor:pointer;
+    transition:.12s;
+  }
+  .choice:active{transform:scale(.97);}
+  .choice.selected{border-color:var(--primary);background:#EEF0FF;color:var(--primary-dark);}
+  .choice.right{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);}
+  .choice.wrong{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
+  .choice.dim{opacity:.45;}
+
+  /* Explanation (after grading) */
+  .explain{
+    display:none;margin-top:12px;padding:11px 13px;border-radius:12px;
+    font-size:13.5px;border-left:4px solid;
+  }
+  .explain.ok{display:block;background:var(--correct-bg);border-color:var(--correct);color:#0d6e4c;}
+  .explain.ng{display:block;background:var(--wrong-bg);border-color:var(--wrong);color:#b13b2a;}
+  .explain b{font-weight:800;}
+
+  /* Bottom action bar */
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .bar-inner{max-width:600px;margin:0 auto;}
+  .btn{
+    width:100%;border:none;border-radius:14px;
+    background:var(--primary);color:#fff;font-size:17px;font-weight:800;
+    padding:15px;cursor:pointer;box-shadow:var(--shadow);transition:.12s;
+  }
+  .btn:active{transform:scale(.99);}
+  .btn:disabled{background:#C7C9E0;cursor:not-allowed;box-shadow:none;}
+  .btn.again{background:var(--sun);color:#4a3a00;}
+  .progress{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:9px;font-weight:700;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="back" href="index.html">← クイズ一覧にもどる</a>
+    <h1 class="title"><span class="en">English Quiz</span>前置詞と冠詞</h1>
+    <p class="sub">10問といて「答え合わせ」を押してね。まちがえても解説でわかるよ ✏️</p>
+    <div class="pills" id="pills">
+      <button class="pill active" data-cat="mix">ミックス</button>
+      <button class="pill" data-cat="prep">前置詞</button>
+      <button class="pill" data-cat="art">冠詞 a / an / the</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner"></div>
+  <div id="quiz"></div>
+</main>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="progress" id="progress"></div>
+    <button class="btn" id="action">答え合わせ</button>
+  </div>
+</div>
+
+<script>
+/* ====== 問題バンク ======
+   cat: 'prep'(前置詞) / 'art'(冠詞)
+   q: 英文（___ が空所）, c: 選択肢, a: 正解, ex: 解説
+   冠詞で「つけない」場合の正解・選択肢は "×" を使う
+*/
+const BANK = [
+  // ---- 前置詞：時 ----
+  {cat:'prep',q:"School starts ___ April.",c:["in","on","at"],a:"in",ex:"月の名前には <b>in</b>。"},
+  {cat:'prep',q:"I get up ___ six o'clock.",c:["at","on","in"],a:"at",ex:"時刻には <b>at</b>。"},
+  {cat:'prep',q:"We have P.E. ___ Tuesday.",c:["on","in","at"],a:"on",ex:"曜日には <b>on</b>。"},
+  {cat:'prep',q:"It snows a lot ___ winter.",c:["in","on","at"],a:"in",ex:"季節には <b>in</b>。"},
+  {cat:'prep',q:"My birthday is ___ July 7.",c:["on","in","at"],a:"on",ex:"日付には <b>on</b>。"},
+  {cat:'prep',q:"He came home late ___ night.",c:["at","in","on"],a:"at",ex:"<b>at night</b>（夜に）は決まった言い方。"},
+  {cat:'prep',q:"She was born ___ 2012.",c:["in","on","at"],a:"in",ex:"年（何年）には <b>in</b>。"},
+  {cat:'prep',q:"Let's have lunch ___ noon.",c:["at","in","on"],a:"at",ex:"<b>at noon</b>（正午に）。"},
+  {cat:'prep',q:"I read books ___ the evening.",c:["in","on","at"],a:"in",ex:"<b>in the evening</b>（夕方に）。"},
+  {cat:'prep',q:"The shop opens ___ nine.",c:["at","on","in"],a:"at",ex:"時刻には <b>at</b>。"},
+  {cat:'prep',q:"My party is ___ Saturday.",c:["on","in","at"],a:"on",ex:"曜日には <b>on</b>。"},
+  {cat:'prep',q:"I'll see you ___ the morning.",c:["in","on","at"],a:"in",ex:"<b>in the morning</b>（朝に）。"},
+
+  // ---- 前置詞：場所 ----
+  {cat:'prep',q:"The pen is ___ the desk.",c:["on","in","under"],a:"on",ex:"上にのっている → <b>on</b>。"},
+  {cat:'prep',q:"There are apples ___ the basket.",c:["in","on","under"],a:"in",ex:"中に入っている → <b>in</b>。"},
+  {cat:'prep',q:"The cat is sleeping ___ the table.",c:["under","on","in"],a:"under",ex:"下に → <b>under</b>。"},
+  {cat:'prep',q:"A clock is ___ the wall.",c:["on","in","at"],a:"on",ex:"壁にかかっている → <b>on the wall</b>。"},
+  {cat:'prep',q:"He is standing ___ the door.",c:["at","on","in"],a:"at",ex:"ドアのところに → <b>at the door</b>。"},
+  {cat:'prep',q:"My school is ___ the park.",c:["near","on","in"],a:"near",ex:"近くに → <b>near</b>。"},
+  {cat:'prep',q:"The dog is ___ the two trees.",c:["between","under","on"],a:"between",ex:"2つのものの間 → <b>between A and B</b>。"},
+  {cat:'prep',q:"He put the key ___ his pocket.",c:["in","on","under"],a:"in",ex:"ポケットの中 → <b>in</b>。"},
+  {cat:'prep',q:"The store is ___ the station and the bank.",c:["between","near","under"],a:"between",ex:"2つの間 → <b>between A and B</b>。"},
+  {cat:'prep',q:"We sat ___ the river.",c:["by","on","in"],a:"by",ex:"〜のそばに → <b>by</b>。"},
+  {cat:'prep',q:"The ball is ___ the box.",c:["in","on","at"],a:"in",ex:"箱の中 → <b>in</b>。"},
+  {cat:'prep',q:"She lives ___ Kyoto.",c:["in","at","on"],a:"in",ex:"都市・町には <b>in</b>。"},
+  {cat:'prep',q:"He lives in Japan, but I live ___ Canada.",c:["in","at","on"],a:"in",ex:"国には <b>in</b>。"},
+
+  // ---- 前置詞：動き・方向 ----
+  {cat:'prep',q:"I go ___ school by bike.",c:["to","at","in"],a:"to",ex:"<b>go to 〜</b>（〜へ行く）。"},
+  {cat:'prep',q:"Come ___ my house this Sunday.",c:["to","at","for"],a:"to",ex:"<b>come to 〜</b>（〜へ来る）。"},
+  {cat:'prep',q:"She jumped ___ the pool.",c:["into","on","at"],a:"into",ex:"中へ飛びこむ → <b>into</b>。"},
+  {cat:'prep',q:"We walked ___ the bridge.",c:["across","under","in"],a:"across",ex:"橋を渡って → <b>across</b>。"},
+  {cat:'prep',q:"Let's go ___ the movies.",c:["to","at","in"],a:"to",ex:"<b>go to 〜</b>（〜へ行く）。"},
+  {cat:'prep',q:"I'm ___ Osaka. (出身)",c:["from","to","in"],a:"from",ex:"出身は <b>be from 〜</b>。"},
+  {cat:'prep',q:"We arrived ___ the station.",c:["at","to","in"],a:"at",ex:"駅などに着く → <b>arrive at</b>。"},
+
+  // ---- 前置詞：動詞・形容詞とセット ----
+  {cat:'prep',q:"Look ___ the picture.",c:["at","to","for"],a:"at",ex:"<b>look at 〜</b>（〜を見る）。"},
+  {cat:'prep',q:"Listen ___ the music.",c:["to","at","for"],a:"to",ex:"<b>listen to 〜</b>（〜を聞く）。"},
+  {cat:'prep',q:"I'm looking ___ my glasses.",c:["for","at","to"],a:"for",ex:"<b>look for 〜</b>（〜をさがす）。"},
+  {cat:'prep',q:"Wait ___ me here.",c:["for","at","to"],a:"for",ex:"<b>wait for 〜</b>（〜を待つ）。"},
+  {cat:'prep',q:"Thank you ___ the present.",c:["for","to","at"],a:"for",ex:"<b>Thank you for 〜</b>（〜をありがとう）。"},
+  {cat:'prep',q:"I'm good ___ swimming.",c:["at","in","for"],a:"at",ex:"<b>be good at 〜</b>（〜が得意）。"},
+  {cat:'prep',q:"She is interested ___ science.",c:["in","at","for"],a:"in",ex:"<b>be interested in 〜</b>（〜に興味がある）。"},
+  {cat:'prep',q:"He is afraid ___ dogs.",c:["of","at","for"],a:"of",ex:"<b>be afraid of 〜</b>（〜をこわがる）。"},
+  {cat:'prep',q:"This is a letter ___ you.",c:["for","to","at"],a:"for",ex:"あなたへの（あなたのための）→ <b>for</b>。"},
+  {cat:'prep',q:"I go to school ___ bus.",c:["by","on","in"],a:"by",ex:"交通手段は <b>by bus</b> のように <b>by</b>。"},
+  {cat:'prep',q:"He is talking ___ his teacher.",c:["to","for","at"],a:"to",ex:"<b>talk to 〜</b>（〜と話す）。"},
+  {cat:'prep',q:"We talked ___ the test.",c:["about","to","for"],a:"about",ex:"<b>talk about 〜</b>（〜について話す）。"},
+  {cat:'prep',q:"Cut it ___ a knife.",c:["with","by","for"],a:"with",ex:"道具を使うときは <b>with</b>。"},
+  {cat:'prep',q:"This bag is made ___ paper.",c:["of","from","with"],a:"of",ex:"材料が見てわかるとき → <b>be made of 〜</b>。"},
+  {cat:'prep',q:"I studied ___ two hours.",c:["for","at","in"],a:"for",ex:"〜の間（期間）は <b>for</b>。"},
+  {cat:'prep',q:"Please turn ___ the TV.",c:["on","in","at"],a:"on",ex:"電源を入れる → <b>turn on</b>。"},
+
+  // ---- 冠詞：a / an（音で決まる）----
+  {cat:'art',q:"I have ___ pen.",c:["a","an","the"],a:"a",ex:"子音の音で始まる → <b>a</b>。"},
+  {cat:'art',q:"She ate ___ apple.",c:["an","a","the"],a:"an",ex:"母音の音(a,i,u,e,o)で始まる → <b>an</b>。"},
+  {cat:'art',q:"He is ___ doctor.",c:["a","an","the"],a:"a",ex:"子音の音 → <b>a</b>。"},
+  {cat:'art',q:"I saw ___ owl.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"That's ___ easy question.",c:["an","a","the"],a:"an",ex:"easy は母音の音で始まる → <b>an</b>。"},
+  {cat:'art',q:"He is ___ honest man.",c:["an","a","the"],a:"an",ex:"honest の h は発音しない → 母音の音 → <b>an</b>。"},
+  {cat:'art',q:"I waited for ___ hour.",c:["an","a","the"],a:"an",ex:"hour の h は発音しない → <b>an</b>。"},
+  {cat:'art',q:"It's ___ old house.",c:["an","a","the"],a:"an",ex:"old は母音の音 → <b>an</b>。"},
+  {cat:'art',q:"She wants ___ umbrella.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"He goes to ___ university.",c:["a","an","the"],a:"a",ex:"university は「ユ」の音で始まる → <b>a</b>。つづりが u でも音で決める。"},
+  {cat:'art',q:"I have ___ egg for breakfast.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"He bought ___ new bike.",c:["a","an","the"],a:"a",ex:"new は子音の音 → <b>a</b>。"},
+  {cat:'art',q:"Can I have ___ orange?",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"There is ___ uniform on the bed.",c:["a","an","the"],a:"a",ex:"uniform は「ユ」の音 → <b>a</b>。"},
+  {cat:'art',q:"I'd like ___ cup of coffee.",c:["a","an","the"],a:"a",ex:"a cup of 〜（1杯の〜）。子音の音 → <b>a</b>。"},
+  {cat:'art',q:"I read ___ interesting story.",c:["an","a","the"],a:"an",ex:"interesting は母音の音 → <b>an</b>。"},
+
+  // ---- 冠詞：a → the / the（特定・唯一・最上級・楽器）----
+  {cat:'art',q:"I have a dog. ___ dog is small.",c:["The","A","An"],a:"The",ex:"前に出てきた特定のもの（2回目）→ <b>the</b>。"},
+  {cat:'art',q:"Look at ___ moon tonight.",c:["the","a","an"],a:"the",ex:"1つしかないもの（月）→ <b>the</b>。"},
+  {cat:'art',q:"___ sun is very hot.",c:["The","A","An"],a:"The",ex:"1つしかないもの（太陽）→ <b>the</b>。"},
+  {cat:'art',q:"___ earth goes around the sun.",c:["The","A","An"],a:"The",ex:"1つしかないもの（地球）→ <b>the</b>。"},
+  {cat:'art',q:"Open ___ window, please.",c:["the","a","an"],a:"the",ex:"その場のどの窓か分かる特定のもの → <b>the</b>。"},
+  {cat:'art',q:"Pass me ___ salt, please.",c:["the","a","an"],a:"the",ex:"その場の特定のもの → <b>the</b>。"},
+  {cat:'art',q:"She is ___ tallest girl in the class.",c:["the","a","an"],a:"the",ex:"最上級（一番〜）には <b>the</b>。"},
+  {cat:'art',q:"This is ___ best movie ever.",c:["the","a","an"],a:"the",ex:"最上級には <b>the</b>。"},
+  {cat:'art',q:"I can play ___ piano.",c:["the","a","an"],a:"the",ex:"楽器を演奏する → <b>play the piano</b>。"},
+  {cat:'art',q:"He plays ___ guitar well.",c:["the","a","an"],a:"the",ex:"楽器には <b>the</b>（play the guitar）。"},
+
+  // ---- 冠詞：つけない（×）----
+  {cat:'art',q:"I like ___ music.",c:["×","a","the"],a:"×",ex:"ばくぜんと言う数えられない名詞は冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"___ dogs are friendly animals.",c:["×","A","The"],a:"×",ex:"「犬というものは」という一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"I play ___ tennis after school.",c:["×","a","the"],a:"×",ex:"スポーツには冠詞をつけない（play tennis）。"},
+  {cat:'art',q:"We play ___ soccer on Sundays.",c:["×","a","the"],a:"×",ex:"スポーツには冠詞なし（play soccer）。"},
+  {cat:'art',q:"We have ___ breakfast at seven.",c:["×","a","the"],a:"×",ex:"食事の名前には冠詞をつけない。"},
+  {cat:'art',q:"I have ___ lunch at school.",c:["×","a","the"],a:"×",ex:"食事の名前には冠詞なし。"},
+  {cat:'art',q:"I study ___ English every day.",c:["×","a","the"],a:"×",ex:"教科・言語には冠詞をつけない。"},
+  {cat:'art',q:"She goes to ___ bed at ten.",c:["×","a","the"],a:"×",ex:"<b>go to bed</b>（ねる）は冠詞なし。"},
+  {cat:'art',q:"He lives in ___ Japan.",c:["×","a","the"],a:"×",ex:"ふつうの国名には冠詞をつけない。"},
+  {cat:'art',q:"___ water is very important.",c:["×","A","The"],a:"×",ex:"ばくぜんと言う数えられない名詞は冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"I like ___ cats very much.",c:["×","a","the"],a:"×",ex:"「ねこというものが好き」一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"We don't have ___ homework today.",c:["×","a","the"],a:"×",ex:"homework は数えられない名詞 → 冠詞なし（<b>×</b>）。"},
+
+  // ======== 追加分 ========
+  // ---- 前置詞：時 ----
+  {cat:'prep',q:"The class ends ___ 3:30.",c:["at","on","in"],a:"at",ex:"時刻には <b>at</b>。"},
+  {cat:'prep',q:"We go swimming ___ August.",c:["in","on","at"],a:"in",ex:"月の名前には <b>in</b>。"},
+  {cat:'prep',q:"The concert is ___ May 3.",c:["on","in","at"],a:"on",ex:"日付には <b>on</b>。"},
+  {cat:'prep',q:"Leaves fall ___ autumn.",c:["in","on","at"],a:"in",ex:"季節には <b>in</b>。"},
+  {cat:'prep',q:"I go to bed early ___ Sunday night.",c:["on","in","at"],a:"on",ex:"特定の曜日の夜は <b>on</b>（on Sunday night）。"},
+  {cat:'prep',q:"The store closes ___ midnight.",c:["at","in","on"],a:"at",ex:"<b>at midnight</b>（真夜中に）。"},
+  {cat:'prep',q:"He plays outside ___ the afternoon.",c:["in","on","at"],a:"in",ex:"<b>in the afternoon</b>（午後に）。"},
+  {cat:'prep',q:"New Year's Day is ___ January 1.",c:["on","in","at"],a:"on",ex:"日付には <b>on</b>。"},
+  {cat:'prep',q:"The movie starts ___ eight.",c:["at","on","in"],a:"at",ex:"時刻には <b>at</b>。"},
+  {cat:'prep',q:"We have a holiday ___ Monday.",c:["on","in","at"],a:"on",ex:"曜日には <b>on</b>。"},
+  {cat:'prep',q:"She was born ___ March.",c:["in","on","at"],a:"in",ex:"月の名前には <b>in</b>。"},
+  {cat:'prep',q:"I brush my teeth ___ the morning.",c:["in","on","at"],a:"in",ex:"<b>in the morning</b>（朝に）。"},
+
+  // ---- 前置詞：場所 ----
+  {cat:'prep',q:"The map is ___ the wall.",c:["on","in","under"],a:"on",ex:"壁にはられている → <b>on the wall</b>。"},
+  {cat:'prep',q:"My cap is ___ the bag.",c:["in","on","under"],a:"in",ex:"中に入っている → <b>in</b>。"},
+  {cat:'prep',q:"The shoes are ___ the bed.",c:["under","on","in"],a:"under",ex:"下に → <b>under</b>。"},
+  {cat:'prep',q:"She is waiting ___ the bus stop.",c:["at","on","in"],a:"at",ex:"地点には <b>at</b>（at the bus stop）。"},
+  {cat:'prep',q:"There is a cat ___ the roof.",c:["on","in","under"],a:"on",ex:"屋根の上に → <b>on the roof</b>。"},
+  {cat:'prep',q:"The library is ___ my house.",c:["near","on","in"],a:"near",ex:"近くに → <b>near</b>。"},
+  {cat:'prep',q:"My seat is ___ Tom and Mika.",c:["between","near","under"],a:"between",ex:"2人の間 → <b>between A and B</b>。"},
+  {cat:'prep',q:"Fish live ___ the sea.",c:["in","on","at"],a:"in",ex:"海の中 → <b>in the sea</b>。"},
+  {cat:'prep',q:"He is sitting ___ the sofa.",c:["on","in","at"],a:"on",ex:"ソファの上に → <b>on the sofa</b>。"},
+  {cat:'prep',q:"The ball is ___ the desk.",c:["under","on","in"],a:"under",ex:"机の下に → <b>under</b>。"},
+  {cat:'prep',q:"We stayed ___ a hotel.",c:["at","on","in"],a:"at",ex:"施設に泊まる → <b>stay at</b>。"},
+  {cat:'prep',q:"There is a bird ___ the cage.",c:["in","on","under"],a:"in",ex:"かごの中 → <b>in</b>。"},
+
+  // ---- 前置詞：動き・方向 ----
+  {cat:'prep',q:"She went ___ the station.",c:["to","at","in"],a:"to",ex:"<b>go to 〜</b>（〜へ行く）。"},
+  {cat:'prep',q:"The children ran ___ the classroom.",c:["into","on","at"],a:"into",ex:"中へ走って入る → <b>into</b>。"},
+  {cat:'prep',q:"We swam ___ the river.",c:["across","under","in"],a:"across",ex:"川を横切って → <b>across</b>。"},
+  {cat:'prep',q:"He climbed ___ the tree.",c:["up","on","at"],a:"up",ex:"上へ登る → <b>up</b>。"},
+  {cat:'prep',q:"The cat came ___ the room.",c:["into","on","at"],a:"into",ex:"部屋の中へ → <b>into</b>。"},
+  {cat:'prep',q:"We walked ___ the park.",c:["through","on","at"],a:"through",ex:"公園の中を通りぬけて → <b>through</b>。"},
+  {cat:'prep',q:"Please come ___ the front.",c:["to","at","in"],a:"to",ex:"前へ来る → <b>come to</b>。"},
+  {cat:'prep',q:"The bus goes ___ the airport.",c:["to","at","in"],a:"to",ex:"〜へ行く → <b>to</b>。"},
+
+  // ---- 前置詞：動詞・形容詞とセット ----
+  {cat:'prep',q:"I'm proud ___ my sister.",c:["of","at","for"],a:"of",ex:"<b>be proud of 〜</b>（〜をほこりに思う）。"},
+  {cat:'prep',q:"She is kind ___ everyone.",c:["to","at","for"],a:"to",ex:"<b>be kind to 〜</b>（〜に親切だ）。"},
+  {cat:'prep',q:"This bag is different ___ that one.",c:["from","of","to"],a:"from",ex:"<b>be different from 〜</b>（〜とちがう）。"},
+  {cat:'prep',q:"He is famous ___ his songs.",c:["for","at","of"],a:"for",ex:"<b>be famous for 〜</b>（〜で有名だ）。"},
+  {cat:'prep',q:"Please look ___ my dog today.",c:["after","at","for"],a:"after",ex:"<b>look after 〜</b>（〜のせわをする）。"},
+  {cat:'prep',q:"I'm worried ___ the test.",c:["about","at","for"],a:"about",ex:"<b>be worried about 〜</b>（〜が心配だ）。"},
+  {cat:'prep',q:"Please turn ___ the light.",c:["off","in","at"],a:"off",ex:"消す → <b>turn off</b>。"},
+  {cat:'prep',q:"She takes care ___ her cat.",c:["of","at","for"],a:"of",ex:"<b>take care of 〜</b>（〜のせわをする）。"},
+  {cat:'prep',q:"I agree ___ you.",c:["with","to","at"],a:"with",ex:"<b>agree with 〜</b>（〜に賛成する）。"},
+  {cat:'prep',q:"Please write ___ a pen.",c:["with","by","for"],a:"with",ex:"道具を使うときは <b>with</b>。"},
+  {cat:'prep',q:"He always comes ___ time.",c:["on","in","at"],a:"on",ex:"<b>on time</b>（時間どおりに）。"},
+  {cat:'prep',q:"Thank you ___ helping me.",c:["for","to","at"],a:"for",ex:"<b>Thank you for 〜ing</b>（〜してくれてありがとう）。"},
+  {cat:'prep',q:"Can you help me ___ my homework?",c:["with","for","to"],a:"with",ex:"<b>help 人 with 〜</b>（〜を手伝う）。"},
+  {cat:'prep',q:"She is busy ___ her work.",c:["with","at","for"],a:"with",ex:"<b>be busy with 〜</b>（〜でいそがしい）。"},
+  {cat:'prep',q:"I'm not good ___ math.",c:["at","in","for"],a:"at",ex:"<b>be good at 〜</b>（〜が得意）。"},
+  {cat:'prep',q:"I'm sorry ___ being late.",c:["for","to","at"],a:"for",ex:"<b>be sorry for 〜</b>（〜をあやまる）。"},
+  {cat:'prep',q:"Please listen ___ your teacher.",c:["to","at","for"],a:"to",ex:"<b>listen to 〜</b>（〜を聞く）。"},
+
+  // ---- 冠詞：a / an ----
+  {cat:'art',q:"I want ___ ice cream.",c:["an","a","the"],a:"an",ex:"ice は母音の音 → <b>an</b>。"},
+  {cat:'art',q:"She is ___ artist.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"That's ___ good idea.",c:["a","an","the"],a:"a",ex:"good は子音の音 → <b>a</b>。"},
+  {cat:'art',q:"I need ___ eraser.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"He is ___ tall boy.",c:["a","an","the"],a:"a",ex:"tall は子音の音 → <b>a</b>。"},
+  {cat:'art',q:"We have ___ exam tomorrow.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"I saw ___ UFO.",c:["a","an","the"],a:"a",ex:"UFO は「ユー」の音で始まる → <b>a</b>。つづりでなく音で決める。"},
+  {cat:'art',q:"This is ___ useful book.",c:["a","an","the"],a:"a",ex:"useful は「ユー」の音 → <b>a</b>。"},
+  {cat:'art',q:"She made ___ apple pie.",c:["an","a","the"],a:"an",ex:"apple は母音の音 → <b>an</b>。"},
+  {cat:'art',q:"I ate ___ banana.",c:["a","an","the"],a:"a",ex:"子音の音 → <b>a</b>。"},
+  {cat:'art',q:"There is ___ ant on the table.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"My father is ___ engineer.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+  {cat:'art',q:"Do you have ___ pencil?",c:["a","an","the"],a:"a",ex:"子音の音 → <b>a</b>。"},
+  {cat:'art',q:"He drew ___ elephant.",c:["an","a","the"],a:"an",ex:"母音の音 → <b>an</b>。"},
+
+  // ---- 冠詞：the ----
+  {cat:'art',q:"I have two cats. ___ cats are cute.",c:["The","A","An"],a:"The",ex:"前に出た特定のもの（2回目）→ <b>the</b>。"},
+  {cat:'art',q:"Turn right at ___ next corner.",c:["the","a","an"],a:"the",ex:"「次の」など特定できるもの → <b>the</b>。"},
+  {cat:'art',q:"___ sky is blue today.",c:["The","A","An"],a:"The",ex:"1つしかないもの（空）→ <b>the</b>。"},
+  {cat:'art',q:"He is ___ smartest boy in school.",c:["the","a","an"],a:"the",ex:"最上級には <b>the</b>。"},
+  {cat:'art',q:"Please close ___ door.",c:["the","a","an"],a:"the",ex:"その場の特定のドア → <b>the</b>。"},
+  {cat:'art',q:"She plays ___ violin.",c:["the","a","an"],a:"the",ex:"楽器には <b>the</b>（play the violin）。"},
+  {cat:'art',q:"This is ___ most beautiful place.",c:["the","a","an"],a:"the",ex:"最上級には <b>the</b>。"},
+  {cat:'art',q:"___ first question is easy.",c:["The","A","An"],a:"The",ex:"first など順番を表す語には <b>the</b>。"},
+  {cat:'art',q:"The moon goes around ___ earth.",c:["the","a","an"],a:"the",ex:"1つしかないもの（地球）→ <b>the</b>。"},
+  {cat:'art',q:"I saw a cat. ___ cat was black.",c:["The","A","An"],a:"The",ex:"前に出た特定のもの → <b>the</b>。"},
+
+  // ---- 冠詞：つけない（×）----
+  {cat:'art',q:"I don't like ___ carrots.",c:["×","a","the"],a:"×",ex:"一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"___ children like ice cream.",c:["×","The","A"],a:"×",ex:"「子どもというものは」一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"He speaks ___ Japanese.",c:["×","a","the"],a:"×",ex:"言語には冠詞をつけない。"},
+  {cat:'art',q:"We play ___ baseball.",c:["×","a","the"],a:"×",ex:"スポーツには冠詞をつけない。"},
+  {cat:'art',q:"I have ___ dinner at seven.",c:["×","a","the"],a:"×",ex:"食事の名前には冠詞なし。"},
+  {cat:'art',q:"She studies ___ science.",c:["×","a","the"],a:"×",ex:"教科には冠詞をつけない。"},
+  {cat:'art',q:"___ elephants are big animals.",c:["×","The","A"],a:"×",ex:"一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"I drink ___ milk every morning.",c:["×","a","the"],a:"×",ex:"ばくぜんと言う数えられない名詞 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"He goes to ___ school by bus.",c:["×","a","the"],a:"×",ex:"go to school（学校へ通う）は冠詞なし。"},
+  {cat:'art',q:"She is from ___ China.",c:["×","a","the"],a:"×",ex:"ふつうの国名には冠詞をつけない。"},
+  {cat:'art',q:"I like ___ tea.",c:["×","a","the"],a:"×",ex:"ばくぜんと言う数えられない名詞 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"___ birds can fly.",c:["×","The","A"],a:"×",ex:"「鳥というものは」一般的な複数 → 冠詞なし（<b>×</b>）。"},
+  {cat:'art',q:"We have ___ P.E. today.",c:["×","a","the"],a:"×",ex:"教科には冠詞をつけない。"}
+];
+
+/* ====== 状態 ====== */
+let category = 'mix';
+let current = [];      // 出題中の10問
+let answers = [];      // ユーザーの選択
+let graded = false;
+
+const $ = s => document.querySelector(s);
+const quizEl = $('#quiz');
+const bannerEl = $('#banner');
+const actionEl = $('#action');
+const progressEl = $('#progress');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function pickQuestions(){
+  let pool = BANK.filter(q => category==='mix' ? true : q.cat===category);
+  pool = shuffle(pool).slice(0,10);
+  // 各問題の選択肢の並び順もシャッフル
+  return pool.map(q => ({...q, c: shuffle(q.c)}));
+}
+
+function tagLabel(cat){ return cat==='prep' ? '前置詞' : '冠詞'; }
+
+function render(){
+  quizEl.innerHTML = '';
+  current.forEach((q,i)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const sentence = q.q.replace('___', '<span class="blank" id="blank-'+i+'">?</span>');
+    card.innerHTML =
+      '<div class="q-top"><div class="num">'+(i+1)+'</div><span class="tag">'+tagLabel(q.cat)+'</span></div>'+
+      '<div class="sentence">'+sentence+'</div>'+
+      '<div class="choices" id="choices-'+i+'"></div>'+
+      '<div class="explain" id="explain-'+i+'"></div>';
+    quizEl.appendChild(card);
+
+    const chWrap = card.querySelector('#choices-'+i);
+    q.c.forEach(opt=>{
+      const b = document.createElement('button');
+      b.className = 'choice';
+      b.textContent = opt;
+      b.onclick = ()=>selectChoice(i,opt);
+      b.dataset.opt = opt;
+      chWrap.appendChild(b);
+    });
+  });
+  updateProgress();
+}
+
+function selectChoice(i,opt){
+  if(graded) return;
+  answers[i] = opt;
+  const wrap = document.querySelector('#choices-'+i);
+  wrap.querySelectorAll('.choice').forEach(b=>{
+    b.classList.toggle('selected', b.dataset.opt===opt);
+  });
+  const blank = document.querySelector('#blank-'+i);
+  blank.textContent = opt;
+  blank.classList.add('filled');
+  updateProgress();
+}
+
+function updateProgress(){
+  if(graded) return;
+  const done = answers.filter(a=>a!=null).length;
+  progressEl.textContent = done+' / 10 問 こたえた';
+  actionEl.disabled = done<10;
+}
+
+function grade(){
+  graded = true;
+  let score = 0;
+  current.forEach((q,i)=>{
+    const wrap = document.querySelector('#choices-'+i);
+    const exp = document.querySelector('#explain-'+i);
+    const userAns = answers[i];
+    const isRight = userAns===q.a;
+    if(isRight) score++;
+
+    wrap.querySelectorAll('.choice').forEach(b=>{
+      b.style.pointerEvents='none';
+      const opt = b.dataset.opt;
+      if(opt===q.a) b.classList.add('right');
+      else if(opt===userAns) b.classList.add('wrong');
+      else b.classList.add('dim');
+    });
+
+    const blank = document.querySelector('#blank-'+i);
+    blank.textContent = q.a;
+    blank.style.color = isRight ? 'var(--correct)' : 'var(--wrong)';
+
+    const head = isRight ? '⭕ 正解！ ' : '❌ 正解は <b>'+q.a+'</b> ';
+    exp.className = 'explain ' + (isRight?'ok':'ng');
+    exp.innerHTML = head + '— ' + q.ex;
+  });
+
+  showBanner(score);
+  actionEl.textContent = '新しい10問に挑戦';
+  actionEl.classList.add('again');
+  actionEl.disabled = false;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showBanner(score){
+  let msg, stars;
+  if(score===10){ msg='パーフェクト！すごい！🎉'; stars='⭐⭐⭐⭐⭐'; }
+  else if(score>=8){ msg='よくできました！あと少しで満点！'; stars='⭐⭐⭐⭐'; }
+  else if(score>=6){ msg='いい調子！解説を見て復習しよう。'; stars='⭐⭐⭐'; }
+  else if(score>=4){ msg='ここから伸びる！解説でコツをつかもう。'; stars='⭐⭐'; }
+  else { msg='まちがいは宝物。解説をじっくり読んでみよう。'; stars='⭐'; }
+  bannerEl.innerHTML =
+    '<div class="score">'+score+'<small> / 10 点</small></div>'+
+    '<div class="stars">'+stars+'</div>'+
+    '<div class="msg">'+msg+'</div>';
+  bannerEl.classList.add('show');
+}
+
+function newRound(){
+  graded = false;
+  answers = new Array(10).fill(null);
+  current = pickQuestions();
+  bannerEl.classList.remove('show');
+  actionEl.textContent = '答え合わせ';
+  actionEl.classList.remove('again');
+  render();
+}
+
+/* カテゴリー切り替え */
+$('#pills').addEventListener('click', e=>{
+  const btn = e.target.closest('.pill');
+  if(!btn) return;
+  category = btn.dataset.cat;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p===btn));
+  newRound();
+});
+
+/* メインボタン：採点 or 次の10問 */
+actionEl.addEventListener('click', ()=>{
+  if(graded) newRound();
+  else grade();
+});
+
+newRound();
+</script>
+</body>
+</html>
